@@ -1,7 +1,8 @@
 apply plugin: 'com.android.library'
-
+apply plugin: 'maven-publish'
 android {
     compileSdkVersion 32
+    namespace 'studio.stream.libplayer'
 
     defaultConfig {
         minSdkVersion 16
@@ -60,6 +61,51 @@ afterEvaluate {
         project.compileDebugJavaWithJavac.dependsOn 'externalNativeBuildDebug'
     if (project.hasProperty('compileReleaseJavaWithJavac'))
         project.compileReleaseJavaWithJavac.dependsOn 'externalNativeBuildRelease'
+}
+
+afterEvaluate {
+    publishing {
+        publications {
+            release(MavenPublication) {
+                groupId 'stream.studio'                
+                artifactId 'libplayer'
+                version '0.0.1'
+                artifact(bundleReleaseAar)
+            }
+            
+            debug(MavenPublication) {
+                groupId 'stream.studio'
+                artifactId 'libplayer'
+                version '0.0.1-debug'
+                artifact(bundleDebugAar)
+            }
+        }
+
+        repositories {
+            maven {
+                name = "GitHubPackages"
+                
+                url = uri("https://maven.pkg.github.com/stream-studio/libplayer")
+
+                def github_username
+                def github_password
+
+                if (project.hasProperty('github_username')){
+                    github_username = project.github_username
+                    github_password = project.github_password
+                }
+                else{
+                    github_username = System.env.GITHUB_USERNAME
+                    github_password = System.env.GITHUB_PASSWORD
+                }
+
+                credentials {
+                    username = github_username
+                    password = github_password
+                }
+            }
+        }
+    }
 }
 
 dependencies {
